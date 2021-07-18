@@ -1,6 +1,8 @@
 CC=gcc
 AR=ar
 
+GCCVERSION = $(shell gcc --version | grep ^gcc | sed -E 's/.* ([0-9]+).*/\1/')
+
 SRC = $(wildcard src/*.c) $(wildcard src/*/*.c)
 OBJ = $(addprefix obj/,$(notdir $(SRC:.c=.o)))
 
@@ -30,6 +32,10 @@ ifeq ($(findstring MINGW,$(PLATFORM)),MINGW)
 	OBJ += corange.res
 endif
 
+ifeq "$(GCCVERSION)" "10"
+    CFLAGS += -fcommon
+	LFLAGS += -fcommon
+endif
 
 all: $(DYNAMIC) $(STATIC)
 
@@ -63,3 +69,11 @@ install_win32: $(STATIC)
 install_win64: $(STATIC) $(DYNAMIC)
 	cp $(STATIC) C:/MinGW64/x86_64-w64-mingw32/lib/$(STATIC)
 	cp $(DYNAMIC) C:/MinGW64/x86_64-w64-mingw32/bin/$(DYNAMIC)
+
+install_msys_mingw64: $(STATIC) $(DYNAMIC)
+	cp $(STATIC) /mingw64/lib/$(STATIC)
+	cp $(DYNAMIC) /mingw64/bin/$(DYNAMIC)
+
+install_msys_mingw32: $(STATIC) $(DYNAMIC)
+	cp $(STATIC) /mingw32/lib/$(STATIC)
+	cp $(DYNAMIC) /mingw32/bin/$(DYNAMIC)
